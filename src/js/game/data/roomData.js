@@ -4,6 +4,16 @@
  */
 
 export const ROOM_TYPES = {
+    corridor: {
+        key: 'corridor',
+        name: '통로',
+        emoji: '🧱',
+        description: '적이 이동하는 길. 방을 연결하는 전선 역할',
+        color: '#95a5a6',
+        baseCost: 30,
+        effect: 'none',
+        isCorridor: true
+    },
     combat: {
         key: 'combat',
         name: '전투방',

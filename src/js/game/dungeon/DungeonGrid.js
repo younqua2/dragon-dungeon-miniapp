@@ -229,6 +229,30 @@ export class DungeonGrid {
         return [...roomIds];
     }
 
+    /** 특정 방이 입구에서 도달 가능한지 (전선 연결 체크) */
+    isRoomConnectedToEntrance(roomId) {
+        const startRooms = this._getRoomsAdjacentToPoint(this.entrance);
+        if (startRooms.includes(roomId)) return true;
+
+        const visited = new Set();
+        const queue = [...startRooms];
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            if (current === roomId) return true;
+            if (visited.has(current)) continue;
+            visited.add(current);
+
+            const adj = this.getAdjacentRooms(current);
+            for (const neighbor of adj) {
+                if (typeof neighbor === 'number' && !visited.has(neighbor)) {
+                    queue.push(neighbor);
+                }
+            }
+        }
+        return false;
+    }
+
     /** 직렬화 (저장용) */
     serialize() {
         return {

@@ -384,7 +384,7 @@ export class RoomBattle {
             this.canvas.addFloatingText(this.hero.x, this.hero.y - 40, 'SURVIVED', '#f44');
         }
 
-        // 경험치 부여
+        // 경험치 부여 + 진화 체크
         if (this.room.deployedPokemon) {
             for (const p of this.room.deployedPokemon) {
                 p.exp = (p.exp || 0) + 10;
@@ -396,7 +396,46 @@ export class RoomBattle {
                         this.hero.y - 50,
                         `${p.name} Lv.UP!`, '#ff0'
                     );
+
+                    // 진화 체크
+                    const specieData = pokemonData[p.key];
+                    if (specieData?.evolution && p.level >= specieData.evolution.level) {
+                        const evoKey = specieData.evolution.pokemon;
+                        const evoData = pokemonData[evoKey];
+                        if (evoData) {
+                            const langIdx = 7; // 한국어
+                            const oldName = p.name;
+                            p.key = evoKey;
+                            p.name = evoData.name[langIdx] || evoData.name[0];
+                            p.spritePath = evoData.sprite.image;
+                            p.frames = evoData.sprite.frames;
+                            p.hold = evoData.sprite.hold;
+                            this.canvas.addFloatingText(
+                                this.hero.x + Math.random() * 40 - 20,
+                                this.hero.y - 65,
+                                `${oldName} → ${p.name} 진화!`, '#ff00ff'
+                            );
+                        }
+                    }
                 }
+            }
+        }
+
+        // 카드조각 드롭 (영웅 처치 시)
+        if (this.hero.health <= 0) {
+            const fragmentChance = this.hero.isBoss ? 0.8 : 0.3;
+            if (Math.random() < fragmentChance) {
+                // 랜덤 권속 카드조각 드롭
+                const keys = Object.keys(pokemonData);
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                const fragments = this.canvas.main.data.fragments || {};
+                fragments[randomKey] = (fragments[randomKey] || 0) + 1;
+                this.canvas.main.data.fragments = fragments;
+                const fragName = pokemonData[randomKey].name[7] || pokemonData[randomKey].name[0];
+                this.canvas.addFloatingText(
+                    this.hero.x, this.hero.y - 60,
+                    `🃏 ${fragName} 조각!`, '#00e5ff'
+                );
             }
         }
 

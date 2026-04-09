@@ -174,7 +174,10 @@ export class DungeonUI {
                 </div>
             </div>
 
-            <div class="ui-grid" style="grid-template-columns: repeat(3, 1fr); margin-top:8px;">
+            <div class="ui-grid" style="grid-template-columns: repeat(4, 1fr); margin-top:8px;">
+                <div class="ui-btn" id="btn-corridor" style="background:#3a3a3a; border:1px solid #666;">
+                    🧱 통로<br><span style="font-size:10px; color:#aaa;">30G · 길 배치</span>
+                </div>
                 <div class="ui-btn" id="btn-place" style="background:#1a5c1a;">
                     ✅ 배치<br><span style="font-size:10px; color:#aaa;">셀 터치로 배치</span>
                 </div>
@@ -205,6 +208,15 @@ export class DungeonUI {
                 this.selectedType = e.currentTarget.dataset.type;
                 this.renderTabContent();
             });
+        });
+
+        // 통로 빠른 배치
+        const btnCorridor = document.getElementById('btn-corridor');
+        if (btnCorridor) btnCorridor.addEventListener('click', () => {
+            this.selectedTemplate = 'single';
+            this.selectedType = 'corridor';
+            this.main.game.startPlacement('single', 'corridor');
+            this._showMsg('그리드에서 통로를 배치하세요 (연속 터치 가능)', '#95a5a6');
         });
 
         // 배치 시작
@@ -248,18 +260,68 @@ export class DungeonUI {
             </div>
         `).join('');
 
+        // 카드조각 목록
+        const fragments = this.main.data.fragments || {};
+        const fragmentEntries = Object.entries(fragments).filter(([, cnt]) => cnt > 0);
+        const fragmentHTML = fragmentEntries.length === 0
+            ? '<div style="color:#888; font-size:12px; text-align:center; grid-column:span 4;">전투에서 카드조각을 획득하세요</div>'
+            : fragmentEntries.map(([key, cnt]) => {
+                const pData = pokemonData[key];
+                if (!pData) return '';
+                const name = pData.name[7] || pData.name[0];
+                const canSummon = cnt >= 10;
+                return `
+                    <div class="ui-btn btn-fragment" data-key="${key}" style="padding:6px; font-size:10px; ${canSummon ? 'border:1px solid #00e5ff;' : 'opacity:0.7;'}">
+                        🃏 ${name}<br>
+                        <span style="color:${canSummon ? '#00e5ff' : '#aaa'};">${cnt}/10</span>
+                        ${canSummon ? '<br><span style="color:#00e5ff; font-size:9px;">소환 가능!</span>' : ''}
+                    </div>`;
+            }).join('');
+
         content.innerHTML = `
             <div class="ui-title" style="color:#60bec7; margin-bottom:10px;">
-                내 몬스터 목록
-                <br><span style="font-size:12px; color:#aaa">(전투방 선택 → 몬스터 터치로 배치)</span>
+                내 권속 목록
+                <br><span style="font-size:12px; color:#aaa">(전투방 선택 → 권속 터치로 배치)</span>
             </div>
             <div class="ui-grid">${emptyGuide || monstersHTML}</div>
+
+            <div style="margin-top:16px; border-top:1px solid #444; padding-top:12px;">
+                <div class="ui-title" style="color:#00e5ff; font-size:14px; margin-bottom:8px;">🃏 카드조각 (10개 모으면 소환)</div>
+                <div class="ui-grid" style="grid-template-columns: repeat(4, 1fr);">${fragmentHTML}</div>
+            </div>
         `;
 
         this._bindUnitEvents();
     }
 
     _bindUnitEvents() {
+        // 카드조각 소환
+        document.querySelectorAll('.btn-fragment').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const key = e.currentTarget.dataset.key;
+                const fragments = this.main.data.fragments || {};
+                if ((fragments[key] || 0) < 10) {
+                    this._showMsg('조각이 부족합니다 (10개 필요)', '#f44');
+                    return;
+                }
+                fragments[key] -= 10;
+                const pData = pokemonData[key];
+                if (!this.main.data.monsters) this.main.data.monsters = [];
+                this.main.data.monsters.push({
+                    key,
+                    name: pData.name[7] || pData.name[0],
+                    spritePath: pData.sprite.image,
+                    frames: pData.sprite.frames || 1,
+                    hold: pData.sprite.hold || 15,
+                    level: 1,
+                    exp: 0
+                });
+                this.main.saveOnEvent('fragment_summon');
+                this._showMsg(`🃏 ${pData.name[7] || pData.name[0]} 소환 성공!`, '#00e5ff');
+                this.renderTabContent();
+            });
+        });
+
         document.querySelectorAll('.btn-deploy-mon').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const idx = parseInt(e.currentTarget.dataset.monIdx);

@@ -52,7 +52,45 @@ export class DungeonCanvas {
         if (dungeonData && dungeonData.rooms && dungeonData.rooms.length > 0) {
             return DungeonGrid.deserialize(dungeonData);
         }
-        return new DungeonGrid(8);
+
+        // 새 게임: 초기 세팅 던전 생성
+        const grid = new DungeonGrid(8);
+        this._buildStarterDungeon(grid);
+        return grid;
+    }
+
+    /** 초기 세팅 던전: 입구 → 둥지까지 기본 통로 + 방 배치 */
+    _buildStarterDungeon(grid) {
+        const single = ROOM_TEMPLATES.single;
+
+        // 통로 배치: 입구(0,0) → (0,1) → (1,1) → (2,1) → (3,1) → (3,2) → (3,3) →
+        //           (4,3) → (5,3) → (5,4) → (5,5) → (6,5) → (6,6) → (7,6) → 둥지 인접
+        const corridorCells = [
+            [1, 0], [2, 0], [3, 0],           // 입구에서 우측으로
+            [3, 1], [3, 2], [3, 3],           // 아래로 꺾기
+            [4, 3], [5, 3],                    // 우측으로
+            [5, 4], [5, 5],                    // 아래로
+            [6, 5], [6, 6],                    // 우측 + 아래
+            [7, 6],                            // 둥지 인접
+        ];
+
+        for (const [col, row] of corridorCells) {
+            grid.placeRoom(single, 'corridor', col, row);
+        }
+
+        // 전투방 (통로 인접)
+        grid.placeRoom(single, 'combat', 2, 1);  // 통로 (2,0) 아래
+        grid.placeRoom(single, 'combat', 4, 4);  // 통로 (5,4) 좌측
+
+        // 함정방
+        grid.placeRoom(single, 'trap', 4, 2);    // 통로 (3,2) 우측
+
+        // 기념품점
+        grid.placeRoom(single, 'shop', 6, 4);    // 통로 (6,5) 위
+
+        // 초기 데이터 저장
+        this.main.data.dungeon = grid.serialize();
+        this.main.saveOnEvent('starter_dungeon');
     }
 
     _bindInput() {
@@ -341,37 +379,52 @@ export class DungeonCanvas {
         if (!room) return;
         const type = ROOM_TYPES[room.type];
         const color = type ? type.color : '#444';
+        const isCorridor = type?.isCorridor;
+        const isConnected = this.grid.isRoomConnectedToEntrance(room.id);
 
         // 방의 셀들을 채우기
         for (const cell of room.cells) {
             const x = P + cell.col * CS;
             const y = P + cell.row * CS;
 
-            // 방 배경
-            ctx.fillStyle = color + '40'; // 25% 투명도
-            ctx.fillRect(x + 2, y + 2, CS - 4, CS - 4);
+            if (isCorridor) {
+                // 통로: 돌바닥 스타일
+                ctx.fillStyle = '#3a3a3a';
+                ctx.fillRect(x + 2, y + 2, CS - 4, CS - 4);
+                // 중앙 밝은 줄 (길 느낌)
+                ctx.fillStyle = '#555';
+                ctx.fillRect(x + CS * 0.2, y + CS * 0.2, CS * 0.6, CS * 0.6);
+                // 점선 테두리
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.strokeRect(x + 2, y + 2, CS - 4, CS - 4);
+                ctx.setLineDash([]);
+            } else {
+                // 일반 방 배경
+                ctx.globalAlpha = isConnected ? 1.0 : 0.4;
+                ctx.fillStyle = color + '40';
+                ctx.fillRect(x + 2, y + 2, CS - 4, CS - 4);
 
-            // 방 테두리 (인접 셀이 같은 방이 아닌 면만)
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
+                // 방 테두리
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
 
-            const isInRoom = (c, r) => room.cells.some(cc => cc.col === c && cc.row === r);
+                const isInRoom = (c, r) => room.cells.some(cc => cc.col === c && cc.row === r);
 
-            // 상
-            if (!isInRoom(cell.col, cell.row - 1)) {
-                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CS, y); ctx.stroke();
-            }
-            // 하
-            if (!isInRoom(cell.col, cell.row + 1)) {
-                ctx.beginPath(); ctx.moveTo(x, y + CS); ctx.lineTo(x + CS, y + CS); ctx.stroke();
-            }
-            // 좌
-            if (!isInRoom(cell.col - 1, cell.row)) {
-                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CS); ctx.stroke();
-            }
-            // 우
-            if (!isInRoom(cell.col + 1, cell.row)) {
-                ctx.beginPath(); ctx.moveTo(x + CS, y); ctx.lineTo(x + CS, y + CS); ctx.stroke();
+                if (!isInRoom(cell.col, cell.row - 1)) {
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CS, y); ctx.stroke();
+                }
+                if (!isInRoom(cell.col, cell.row + 1)) {
+                    ctx.beginPath(); ctx.moveTo(x, y + CS); ctx.lineTo(x + CS, y + CS); ctx.stroke();
+                }
+                if (!isInRoom(cell.col - 1, cell.row)) {
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CS); ctx.stroke();
+                }
+                if (!isInRoom(cell.col + 1, cell.row)) {
+                    ctx.beginPath(); ctx.moveTo(x + CS, y); ctx.lineTo(x + CS, y + CS); ctx.stroke();
+                }
+                ctx.globalAlpha = 1.0;
             }
         }
 
@@ -381,7 +434,8 @@ export class DungeonCanvas {
         const cx = P + (centerX + 0.5) * CS;
         const cy = P + (centerY + 0.5) * CS;
 
-        if (type) {
+        if (type && !isCorridor) {
+            ctx.globalAlpha = isConnected ? 1.0 : 0.4;
             ctx.font = '28px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(type.emoji, cx, cy + 4);
@@ -389,6 +443,14 @@ export class DungeonCanvas {
             ctx.font = 'bold 13px PressStart2P, monospace';
             ctx.fillStyle = '#fff';
             ctx.fillText(type.name, cx, cy + 28);
+
+            // 미연결 표시
+            if (!isConnected) {
+                ctx.font = 'bold 11px PressStart2P, monospace';
+                ctx.fillStyle = '#f44';
+                ctx.fillText('⚡미연결', cx, cy - 25);
+            }
+            ctx.globalAlpha = 1.0;
         }
 
         // 배치된 권속 수 표시
@@ -581,7 +643,15 @@ export class DungeonCanvas {
         const type = ROOM_TYPES[room.type];
         if (!type) return;
 
+        // 입구에 연결되지 않은 방은 효과 발동하지 않음 (전선 역할)
+        if (!type.isCorridor && !this.grid.isRoomConnectedToEntrance(room.id)) {
+            return;
+        }
+
         switch (type.effect) {
+            case 'none':
+                // 통로: 효과 없음 (적 이동만)
+                break;
             case 'damage': {
                 const dmg = type.baseDamage + (room.level - 1) * type.damageScale;
                 hero.health -= dmg;

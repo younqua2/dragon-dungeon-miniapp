@@ -1,7 +1,26 @@
-import { eggListData } from '../game/data/pokemonData.js';
+import { eggListData, pokemonData } from '../game/data/pokemonData.js';
 import { achievementData } from '../game/data/achievementData.js';
 
 const STORAGE_KEY = 'data';
+
+/** 초기 지급 권속 생성 */
+function _createStarterMonsters() {
+    const starterKeys = ['charmander', 'bulbasaur', 'squirtle'];
+    return starterKeys
+        .filter(key => pokemonData[key])
+        .map(key => {
+            const p = pokemonData[key];
+            return {
+                key,
+                name: p.name[7] || p.name[0],
+                spritePath: p.sprite.image,
+                frames: p.sprite.frames || 1,
+                hold: p.sprite.hold || 15,
+                level: 3,
+                exp: 0
+            };
+        });
+}
 
 function createDefaultData() {
     return {
@@ -33,8 +52,9 @@ function createDefaultData() {
                 entrance: { col: 0, row: 0 },
                 dragonNest: { col: 7, row: 7 }
             },
-            monsters: [],
+            monsters: _createStarterMonsters(),
             capturedHeroes: [],
+            fragments: {},  // 카드조각: { pokemonKey: count }
             stats: {
                 heroesDefeated: 0,
                 totalGoldEarned: 0,
@@ -70,6 +90,9 @@ export function loadData(userId = 'guest') {
     }
     if (data.save && !data.save.capturedHeroes) {
         data.save.capturedHeroes = [];
+    }
+    if (data.save && !data.save.fragments) {
+        data.save.fragments = {};
     }
 
     return data;
