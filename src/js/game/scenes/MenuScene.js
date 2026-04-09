@@ -184,8 +184,8 @@ const CREDITS = {
 		これは個人が作成した非営利のファンゲームであり、Nintendo、Game Freak、またはポケモン社とは提携しておらず、承認もされていません。<br><br>
 		ポケモンに関連するすべてのキャラクター、アイテム、スプライト、音楽、その他の素材は、それぞれの所有者に帰属します: © Nintendo, Game Freak, Creatures Inc.`,
 		`
-		이것은 개인이 만든 비영리 팬게임이며, Nintendo, Game Freak 또는 포켓몬 컴퍼니와 제휴하거나 후원받거나 승인받은 것이 아닙니다. <br><br>
-		포켓몬 관련 모든 캐릭터, 아이템, 스프라이트, 음악 및 기타 자료는 각 소유자에게 속합니다: © Nintendo, Game Freak, Creatures Inc.`,
+		이것은 개인이 만든 비영리 팬게임이며, Nintendo, Game Freak 또는 The Pokémon Company와 제휴하거나 후원받거나 승인받은 것이 아닙니다. <br><br>
+		Pokémon 관련 모든 캐릭터, 아이템, 스프라이트, 음악 및 기타 자료는 각 소유자에게 속합니다: © Nintendo, Game Freak, Creatures Inc.`,
 		`
 		这是由个人制作的非营利同人游戏，与任天堂、Game Freak 或宝可梦公司无关，也未获得其赞助或批准。<br><br>
 		所有与宝可梦相关的角色、道具、精灵图像、音乐及其他素材均为其各自版权所有者所有：© 任天堂, Game Freak, Creatures Inc.`
@@ -209,7 +209,7 @@ const SHORTCUTS = {
 		12: ['F11', 'F11', 'F11', 'F11', 'F11', 'F11', 'F11', 'F11', 'F11', 'F11'],
 	},
 	do: {
-		0: ['Place Pokémon', 'Colocar Pokémon', 'Placer un Pokémon', 'Colocar Pokémon', 'Posiziona Pokémon', 'Pokémon platz.', 'ポケモンを配置', '포켓몬 배치', '放置宝可梦', 'Umieść Pokémona'],
+		0: ['Place Pokémon', 'Colocar Pokémon', 'Placer un Pokémon', 'Colocar Pokémon', 'Posiziona Pokémon', 'Pokémon platz.', 'ポケモンを配置', '권속 배치', '放置宝可梦', 'Umieść Pokémona'],
 		1: ['Profile', 'Perfil', 'Profil', 'Perfil', 'Profilo', 'Profil', 'プロフィール', '프로필', '个人资料', 'Profil'],
 		2: ['Map', 'Mapa', 'Carte', 'Mapa', 'Mappa', 'Karte', 'マップ', '맵', '地图', 'Mapa'],
 		3: ['Box', 'Caja', 'Boite', 'Caixa', 'Box', 'Box', 'ボックス', '박스', '箱子', 'Box'],

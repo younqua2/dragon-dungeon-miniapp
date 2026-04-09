@@ -30,6 +30,10 @@ export class DungeonCanvas {
         this.floatingTexts = [];
         this.activeBattles = []; // RoomBattle 인스턴스들
 
+        // 패시브 효과 틱 (마력방, 훈련소)
+        this._passiveTickTimer = 0;
+        this._PASSIVE_TICK_INTERVAL = 60000; // 60초
+
         // 인터랙션 상태
         this.selectedCell = null;       // {col, row} - 선택된 셀
         this.ghostRoom = null;          // 배치 프리뷰: {template, type, anchorCol, anchorRow, rotation}
@@ -309,6 +313,13 @@ export class DungeonCanvas {
             }
         }
 
+        // ── 패시브 효과 틱 (마력방, 훈련소) ──
+        this._passiveTickTimer += scaledDelta;
+        if (this._passiveTickTimer >= this._PASSIVE_TICK_INTERVAL) {
+            this._passiveTickTimer -= this._PASSIVE_TICK_INTERVAL;
+            this._processPassiveTick();
+        }
+
         // ── 플로팅 텍스트 ──
         for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
             const ft = this.floatingTexts[i];
@@ -380,7 +391,7 @@ export class DungeonCanvas {
             ctx.fillText(type.name, cx, cy + 28);
         }
 
-        // 배치된 포켓몬 수 표시
+        // 배치된 권속 수 표시
         if (room.deployedPokemon && room.deployedPokemon.length > 0) {
             ctx.font = '12px PressStart2P, monospace';
             ctx.fillStyle = '#ff0';
@@ -447,6 +458,24 @@ export class DungeonCanvas {
     _updateHeroes(ctx, scaledDelta, time, P, CS) {
         for (let i = this.heroes.length - 1; i >= 0; i--) {
             const hero = this.heroes[i];
+
+            // 수감 중이면 탈옥 확률 체크
+            if (hero.imprisoned) {
+                hero.imprisonTimer += scaledDelta;
+                // 매 1초마다 탈옥 확률 체크
+                if (hero.imprisonTimer >= 1000) {
+                    hero.imprisonTimer -= 1000;
+                    const room = hero.imprisonRoom;
+                    const escapeChance = Math.max(0.05, 0.2 - (room && room.level ? (room.level - 1) * 0.03 : 0));
+                    if (Math.random() < escapeChance) {
+                        hero.imprisoned = false;
+                        hero.imprisonRoom = null;
+                        this.addFloatingText(hero.x, hero.y - 20, '탈옥!', '#e74c3c');
+                    }
+                }
+                this._drawHero(ctx, hero);
+                continue;
+            }
 
             // 전투 중이면 이동 정지
             if (hero.inBattle) {
@@ -588,6 +617,19 @@ export class DungeonCanvas {
                 }
                 break;
             }
+            case 'capture': {
+                hero.imprisoned = true;
+                hero.imprisonTimer = 0;
+                hero.imprisonRoom = room;
+                const cx = this.PADDING + (room.cells[0].col + 0.5) * this.CELL_SIZE;
+                const cy = this.PADDING + (room.cells[0].row + 0.5) * this.CELL_SIZE;
+                this.addFloatingText(cx, cy, '수감!', '#7f8c8d');
+                break;
+            }
+            case 'mana_regen':
+            case 'exp_regen':
+                // 패시브 효과 — 영웅 진입 시 효과 없음, _passiveTick에서 처리
+                break;
             case 'td_battle': {
                 // Phase 3: 실시간 TD 전투 시뮬레이션
                 if (room.deployedPokemon && room.deployedPokemon.length > 0) {
@@ -595,7 +637,7 @@ export class DungeonCanvas {
                     this.activeBattles.push(battle);
                     hero.inBattle = battle; // 전투 중 이동 정지용
                 } else {
-                    // 배치된 포켓몬 없으면 그냥 통과
+                    // 배치된 권속 없으면 그냥 통과
                     this.addFloatingText(hero.x, hero.y - 20, '무방비!', '#888');
                 }
                 break;
@@ -605,6 +647,38 @@ export class DungeonCanvas {
         if (hero.health <= 0) {
             this.main.data.stats.heroesDefeated++;
         }
+    }
+
+    _processPassiveTick() {
+        for (const room of this.grid.rooms.values()) {
+            const type = ROOM_TYPES[room.type];
+            if (!type) continue;
+
+            if (type.effect === 'mana_regen') {
+                // 마력방: manaStones 증가
+                this.main.data.dragon.manaStones = (this.main.data.dragon.manaStones || 0) + type.manaPerMinute;
+                const cx = this.PADDING + (room.cells[0].col + 0.5) * this.CELL_SIZE;
+                const cy = this.PADDING + (room.cells[0].row + 0.5) * this.CELL_SIZE;
+                this.addFloatingText(cx, cy, `+${type.manaPerMinute} 마나`, '#8e44ad');
+            }
+
+            if (type.effect === 'exp_regen' && room.deployedPokemon && room.deployedPokemon.length > 0) {
+                // 훈련소: 배치된 권속 경험치 증가
+                for (const p of room.deployedPokemon) {
+                    p.exp = (p.exp || 0) + type.expPerMinute;
+                    if (p.exp >= (p.level || 1) * 20) {
+                        p.exp = 0;
+                        p.level = (p.level || 1) + 1;
+                        const cx = this.PADDING + (room.cells[0].col + 0.5) * this.CELL_SIZE;
+                        const cy = this.PADDING + (room.cells[0].row + 0.5) * this.CELL_SIZE;
+                        this.addFloatingText(cx, cy, `${p.name} Lv.UP!`, '#27ae60');
+                    }
+                }
+            }
+        }
+
+        if (this.main.UI) this.main.UI.update();
+        this.main.saveOnEvent('passive_tick');
     }
 
     _heroDefeated(hero) {

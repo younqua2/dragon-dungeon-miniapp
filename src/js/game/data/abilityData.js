@@ -411,7 +411,7 @@ export const abilityData = {
 			`Aumenta del 20% i danni inflitti dai Pokémon nel raggio d’azione.`,
 			`Erhöht den von Pokémon im Wirkungsbereich verursachten Schaden um 20%.`,
 			`範囲内のポケモンの与えるダメージが20％増加する。`,
-			`범위 내 포켓몬의 피해량이 20% 증가한다.`,
+			`범위 내 권속의 피해량이 20% 증가한다.`,
 			`使范围内的宝可梦造成的伤害提高20%。`,
 			`Zwiększa obrażenia Pokémonów w zasięgu o 20%.`,
 		]
@@ -438,7 +438,7 @@ export const abilityData = {
 			'Aumenta del 50% i danni critici dei Pokémon nel raggio.',
 			'Erhöht den kritischen Schaden von Pokémon im Wirkungsbereich um 50%.',
 			'範囲内のポケモンの急所ダメージが50%上昇する。',
-			'범위 내 포켓몬의 치명타 피해가 50% 증가합니다.',
+			'범위 내 권속의 치명타 피해가 50% 증가합니다.',
 			'使范围内的宝可梦暴击伤害提高50%。',
 			'Zwiększa obrażenia krytyczne Pokémonów w zasięgu o 50%.',
 		]
@@ -465,7 +465,7 @@ export const abilityData = {
 			"Aumenta la probabilità di colpo critico dei Pokémon nell’area del 10%.",
 			"Erhöht die kritische Trefferchance von Pokémon im Wirkungsbereich um 10%.",
 			"範囲内のポケモンの会心率が10％上がる。",
-			"사정거리 내 포켓몬의 크리티컬 확률이 10% 증가합니다.",
+			"사정거리 내 권속의 크리티컬 확률이 10% 증가합니다.",
 			"范围内宝可梦的暴击率提高10%。",
 			"Zwiększa szansę na trafienie krytyczne Pokémonów w zasięgu o 10%."
 		]
@@ -628,7 +628,7 @@ export const abilityData = {
 			'Gli attacchi applicano 1 carica di incubo. Ogni carica infligge danno pari al 20% del potere di questo Pokémon ogni secondo.',
 			'Angriffe fügen 1 Albtraum-Stapel hinzu. Jeder Stapel verursacht Schaden in Höhe von 20% der Kraft dieses Pokémon pro Sekunde.',
 			'攻撃はナイトメア1スタックを付与する。各スタックはこのポケモンの力の20%のダメージを毎秒与える。',
-			'공격은 악몽 1스택을 적용합니다. 각 스택은 이 포켓몬 능력치의 20% 피해를 매초 입힙니다.',
+			'공격은 악몽 1스택을 적용합니다. 각 스택은 이 권속 능력치의 20% 피해를 매초 입힙니다.',
 			'攻擊會附加 1 層惡夢。每層每秒造成相當於此寶可夢力量 20% 的傷害。',
 			'Ataki nakładają 1 warstwę koszmaru. Każda warstwa zadaje obrażenia równe 20% mocy tego Pokémona na sekundę.',
 		]
@@ -644,7 +644,7 @@ export const abilityData = {
 			'Riduce il tempo di ricarica di 0,5 s per ogni Pokémon Fossile nella squadra.',
 			'Verringert die Nachladezeit um 0,5 s für jedes Fossil-Pokémon im Team.',
 			'チームにいる化石ポケモン1体ごとにリロード時間が0.5秒短くなる。',
-			'팀에 있는 화석 포켓몬마다 재장전 시간이 0.5초 감소합니다.',
+			'팀에 있는 화석 권속마다 재장전 시간이 0.5초 감소합니다.',
 			'隊伍中每有 1 隻化石寶可夢，充能時間就減少 0.5 秒。',
 			'Skraca czas przeładowania o 0,5s za każdą Skamielinę w drużynie.',
 		]
@@ -692,7 +692,7 @@ export const abilityData = {
 			'Spara un proiettile per ogni Pokémon Fossile nella squadra. Gli attacchi rallentano il bersaglio per 2 secondi.',
 			'Feuert für jedes Fossil-Pokémon im Team ein Projektil ab. Angriffe verlangsamen das Ziel 2 Sekunden lang.',
 			'チームにいる化石ポケモン1体ごとに弾を1発撃つ。攻撃は対象を2秒間遅くする。',
-			'팀에 있는 화석 포켓몬마다 탄환을 1개 발사합니다. 공격은 대상을 2초 동안 느리게 합니다.',
+			'팀에 있는 화석 권속마다 탄환을 1개 발사합니다. 공격은 대상을 2초 동안 느리게 합니다.',
 			'隊伍中每有一隻化石寶可夢，就會發射一枚投射物。攻擊會使目標減速 2 秒。',
 			'Strzela jednym pociskiem za każdą Skamielinę w drużynie. Ataki spowalniają cel na 2 sekundy.',
 		]
@@ -708,7 +708,7 @@ export const abilityData = {
 			'Si trasforma nel primo Pokémon della squadra, copiandone le statistiche e l’abilità adattate al livello di Ditto.', 
 			'Ditto verwandelt sich in das erste Pokémon im Team und kopiert dessen Werte und Fähigkeit, angepasst an Dittos level.', 
 			'メタモンのレベルに合わせて、手持ちの先頭のポケモンに変身し、その能力値と特性をコピーする。', 
-			'메타몽의 레벨에 맞추어 파티의 첫 번째 포켓몬으로 변신하며, 그 능력치와 특성을 복사한다.',
+			'메타몽의 레벨에 맞추어 파티의 첫 번째 권속으로 변신하며, 그 능력치와 특성을 복사한다.',
 			'會變身為隊伍中的第一隻寶可夢，並依照百變怪的等級複製其能力值與特性。',
 			'Zmienia się w pierwszego Pokémona w drużynie, kopiując jego statystyki i zdolność, dostosowane do poziomu Ditto.',
 		]
@@ -788,7 +788,7 @@ export const abilityData = {
 			"Durante l'onda attuale, ogni volta che questo Pokémon sconfigge un Pokémon, il suo danno aumenta dell'3%.", 
 			'Während der aktuellen Welle erhöht sich der Schaden dieses Pokémon jedes Mal um 3 %, wenn es ein Pokémon besieg.', 
 			'現在のウェーブ中、このポケモンがポケモンを倒すたびに、ダメージが3％増加する。', 
-			'현재 웨이브 동안, 이 포켓몬이 포켓몬을 쓰러뜨릴 때마다 데미지가 3% 증가한다.',
+			'현재 웨이브 동안, 이 권속이 권속을 쓰러뜨릴 때마다 데미지가 3% 증가한다.',
 			'在当前波次中，每当该宝可梦击败一只宝可梦，其伤害提高3%。',
 			'Podczas bieżącej fali, za każdym razem gdy ten Pokémon pokona Pokémona, jego obrażenia rosną o 3%.',
 		]
@@ -916,7 +916,7 @@ export const abilityData = {
 			"Riduce il tempo di ricarica dei Pokémon nel raggio del 15%. Alla fine dell'ondata, ha il 5% di probabilità di recuperare 1 cuore.",
 			"Reduziert die Wiederaufladezeit von Pokémon in Reichweite um 15 %. Am Ende der Welle besteht eine 5%-Chance, 1 Herz wiederherzustellen.",
 			"範囲内のポケモンの再充電時間を15％短縮します。ウェーブ終了時に、5％の確率でハートを1回復します。",
-			"범위 내 포켓몬의 재충전 시간을 15% 감소시킵니다. 웨이브 종료 시 5% 확률로 하트를 1 회복합니다.",
+			"범위 내 권속의 재충전 시간을 15% 감소시킵니다. 웨이브 종료 시 5% 확률로 하트를 1 회복합니다.",
 			"使范围内的宝可梦充能时间减少15%。在波次结束时，有5%的概率恢复1颗心。",
 			"Skraca czas przeładowania Pokémonów w zasięgu o 15%. Na koniec fali istnieje 5% szansy na odzyskanie 1 serca.",
 		]
@@ -932,7 +932,7 @@ export const abilityData = {
 			"Ogni colpo ha una probabilità di 1 su 9000 di rendere cromatico un Pokémon nella sua fase evolutiva finale.",
 			"Jeder Treffer hat eine Chance von 1/9000, ein Pokémon in seiner letzten Entwicklungsstufe schillernd zu machen.",
 			"最終進化段階にいるポケモンを色違いにする確率が、攻撃1回ごとに1/9000ある。",
-			"최종 진화 단계에 있는 포켓몬을 색이 다른 포켓몬으로 만들 확률이 한 번의 타격마다 1/9000이다.",
+			"최종 진화 단계에 있는 권속을 색이 다른 권속으로 만들 확률이 한 번의 타격마다 1/9000이다.",
 			"每次命中都有1/9000的概率使处于最终进化阶段的宝可梦变成闪光。",
 			"Każde trafienie ma 1/9000 szansę, by zmienić Pokémona w jego końcowym stadium ewolucji w shiny.",
 		]
@@ -1239,7 +1239,7 @@ export const abilityData = {
 		    "I Pokémon di Campo/Erba possono essere posizionati sopra questo Pokémon. Il Pokémon trasportato riduce il tempo di ricarica del 15% e applica bonus Erba.",
 		    "Feld/Gras-Pokémon können auf dieses Pokémon gesetzt werden. Das getragene Pokémon verringert die Aufladezeit um 15 % und gewährt Gras-Boni.",
 		    "フィールド/草タイプのポケモンをこのポケモンの上に置くことができます。乗せているポケモンのリチャージ時間を15%短縮し、草タイプのボーナスを適用します。",
-		    "필드/풀 포켓몬을 이 포켓몬 위에 놓을 수 있습니다. 지니고 있는 포켓몬은 재충전 시간을 15% 단축하고 풀 보너스를 적용합니다.",
+		    "필드/풀 권속을 이 권속 위에 놓을 수 있습니다. 지니고 있는 권속은 재충전 시간을 15% 단축하고 풀 보너스를 적용합니다.",
 		    "场地/草属性宝可梦可以放置在此宝可梦之上。所携带的宝可梦会缩短15%的冷却时间并提供草属性加成。",
 		    "Pokémony Pola/Trawy mogą być umieszczone na tym Pokémonie. Niosący Pokémon skraca czas odnowienia o 15% i nakłada trawiaste bonusy."
 		]
@@ -1266,7 +1266,7 @@ export const abilityData = {
 			"Può tenere un oggetto già utilizzato da un altro Pokémon.",
 			"Kann einen Gegenstand halten, der bereits von einem anderen Pokémon benutzt wird.",
 			"他のポケモンが使用している持ち物を持たせることができる。",
-			"다른 포켓몬이 사용 중인 도구를 소지할 수 있습니다.",
+			"다른 권속이 사용 중인 도구를 소지할 수 있습니다.",
 			"可以携带已经被其他宝可梦使用的道具。",
 			"Może trzymać przedmiot, który jest już używany przez innego Pokémona."
 		]
@@ -1348,7 +1348,7 @@ export const abilityData = {
 	// 		"Ottiene una carica ogni volta che un Pokémon entro la portata viene stordito (massimo 1 carica al secondo). Raggiunte 10 cariche, il prossimo attacco infligge danni ad area.",
 	// 		"Erhält jedes Mal eine Aufladung, wenn ein Pokémon in Reichweite betäubt wird (maximal 1 Aufladung pro Sekunde). Bei 10 Aufladungen verursacht der nächste Angriff Flächenschaden.",
 	// 		"範囲内のポケモンがスタンされるたびにチャージを1つ獲得する（1秒につき最大1チャージ）。10チャージに達すると、次の攻撃が範囲ダメージになる。",
-	// 		"범위 내의 포켓몬이 기절할 때마다 충전을 1회 획득합니다(초당 최대 1회). 충전이 10회에 도달하면 다음 공격이 광역 피해를 줍니다.",
+	// 		"범위 내의 권속이 기절할 때마다 충전을 1회 획득합니다(초당 최대 1회). 충전이 10회에 도달하면 다음 공격이 광역 피해를 줍니다.",
 	// 		"每当范围内的宝可梦被眩晕时获得1层充能（每秒最多1层）。达到10层充能后，下次攻击将造成范围伤害。",
 	// 		"Zyskuje jedno naładowanie za każdym razem, gdy Pokémon w zasięgu zostanie ogłuszony (maksymalnie 1 naładowanie na sekundę). Po osiągnięciu 10 naładowań następny atak zadaje obrażenia obszarowe."
 	// 	]

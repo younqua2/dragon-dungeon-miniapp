@@ -28,7 +28,7 @@ export const loadData = async (userId = "guest") => {
                     rooms遭遇: [],
                     facilities: [] // saved rooms
                 },
-                monsters: [], // 획득한 유닛(포켓몬) 목록
+                monsters: [], // 획득한 유닛(권속) 목록
                 capturedHeroes: [], // 포획된 용사 목록
                 stats: {
                     heroesDefeated: 0,

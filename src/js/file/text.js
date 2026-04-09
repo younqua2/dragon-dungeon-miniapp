@@ -122,7 +122,7 @@ export const text = {
 		stats: {
 			0: ['Time played', 'Tiempo jugado', 'Temps de jeu', 'Tempo de jogo', 'Tempo di gioco', 'Spielzeit', 'プレイ時間', '플레이 시간', '游玩时间', 'Czas gry'],
 			1: ['Stars earned', 'Estrellas ganadas', 'Étoiles gagnées', 'Estrelas ganho', 'Stelle ottenute', 'Sterne verdient', '獲得スター', '획득 별', '获得星数', 'Zdobyte gwiazdki'],
-			2: ['Pokémon owned', 'Pokémon obtenidos', 'Pokémon possédés', 'Pokémon obtidos', 'Pokémon posseduti', 'Pokémon im Besitz', '所持ポケモン', '보유 포켓몬', '拥有的宝可梦', 'Posiadane Pokémony'],
+			2: ['Pokémon owned', 'Pokémon obtenidos', 'Pokémon possédés', 'Pokémon obtidos', 'Pokémon posseduti', 'Pokémon im Besitz', '所持ポケモン', '보유 권속', '拥有的宝可梦', 'Posiadane Pokémony'],
 			3: [
 			   	"Shiny Pokémon",
 			  	"Pokémon variocolor",
@@ -131,7 +131,7 @@ export const text = {
 			  	"Pokémon Shiny",
 			  	"Schillerndes Pokémon",
 			  	"色違いポケモン",
-			  	"색이 다른 포켓몬",
+			  	"색이 다른 권속",
 			  	"闪光宝可梦",
 				"Pokémony shiny",
 			],
@@ -219,7 +219,7 @@ export const text = {
 		power: ['Power', 'Poder', 'Puissance', 'Poder', 'Potenza', 'Kraft', 'パワー', '파워', '力量', 'Moc'],
 		speed: ['Recharge', 'Recarga', 'Récupération', 'Recarga', 'Ricarica', 'Nachladen', 'リチャージ', '재충전', '充能', 'Przeładowanie'],
 		range: ['Range', 'Alcance', 'Portée', 'Alcance', 'Portata', 'Reichweite', '射程', '사거리', '射程', 'Zasięg'],
-		shiny: ["Shiny","Variocolor","Chromatique","Shiny","Shiny","Schillernd","色違い","색이 다른 포켓몬","闪光", "Shiny"]
+		shiny: ["Shiny","Variocolor","Chromatique","Shiny","Shiny","Schillernd","色違い","색이 다른 권속","闪光", "Shiny"]
 	},
 	changeName: {
 		title: [
@@ -276,7 +276,7 @@ export const text = {
 			'Nuovo Pokémon ottenuto!',
 			'Neues Pokémon erhalten!',
 			'新しいポケモンを入手！',
-			'새 포켓몬을 획득!',
+			'새 권속을 획득!',
 			'获得了新的宝可梦！',
 			'Zdobyto nowego Pokémona!',
 		],
@@ -288,7 +288,7 @@ export const text = {
 		  	"Contiene un Pokémon casuale.",
 		  	"Enthält ein zufälliges Pokémon.",
 		  	"ランダムなポケモンが入っている。",
-		  	"무작위 포켓몬이 들어 있습니다.",
+		  	"무작위 권속이 들어 있습니다.",
 		  	'包含一隻隨機的寶可夢',
 			"Zawiera losowego Pokémona.",
 		],
@@ -362,7 +362,7 @@ export const text = {
 		    "Questa è una modalità sperimentale. Non ci sono trofei né ricompense per completare una sfida. Le sfide completate non vengono salvate. Chiudere il gioco farà perdere i progressi della sfida. Alcune sfide potrebbero essere impossibili da completare. Hai bisogno di 900 stelle e di almeno 30 Pokémon per poter giocare le sfide. Avviando una sfida perderai i progressi attuali in questo percorso.",
 		    "Dies ist ein experimenteller Modus. Es gibt keine Erfolge oder Belohnungen für das Abschließen einer Herausforderung. Abgeschlossene Herausforderungen werden nicht gespeichert. Das Schließen des Spiels führt zum Verlust des Fortschritts bei der Herausforderung. Einige Herausforderungen könnten unmöglich zu absolvieren sein. Du benötigst 900 Sterne und mindestens 30 Pokémon, um Herausforderungen zu spielen. Beim Starten einer Herausforderung geht dein aktueller Fortschritt auf dieser Route verloren.",
 		    "これは実験モードです。チャレンジを完了しても実績や報酬はありません。完了したチャレンジは保存されません。ゲームを閉じるとチャレンジの進行状況は失われます。クリア不可能なチャレンジも存在する可能性があります。チャレンジをプレイするには、900個の星と少なくとも30匹のポケモンが必要です。チャレンジを開始すると、このルートでの現在の進行状況はリセットされます。",
-		    "이것은 실험 모드입니다. 도전을 완료해도 업적이나 보상은 없습니다. 완료된 도전은 저장되지 않습니다. 게임을 종료하면 도전 진행 상황이 사라집니다. 일부 도전은 완료할 수 없을 수도 있습니다. 도전을 플레이하려면 900개의 별과 최소 30마리의 포켓몬이 필요합니다. 도전을 시작하면 이 루트에서 현재 진행 상황이 초기화됩니다.",
+		    "이것은 실험 모드입니다. 도전을 완료해도 업적이나 보상은 없습니다. 완료된 도전은 저장되지 않습니다. 게임을 종료하면 도전 진행 상황이 사라집니다. 일부 도전은 완료할 수 없을 수도 있습니다. 도전을 플레이하려면 900개의 별과 최소 30마리의 권속이 필요합니다. 도전을 시작하면 이 루트에서 현재 진행 상황이 초기화됩니다.",
 		    "这是一个实验模式。完成挑战不会获得成就或奖励。已完成的挑战不会被保存。关闭游戏将丢失挑战进度。某些挑战可能无法完成。你需要900颗星和至少30只宝可梦才能进行挑战。开始挑战时，将会重置当前路线的进度。",
 			"To tryb eksperymentalny. Za ukończenie wyzwania nie ma osiągnięć ani nagród. Ukończone wyzwania nie są zapisywane. Zamknięcie gry spowoduje utratę postępów w wyzwaniu. Niektórych wyzwań może nie dać się ukończyć. Aby grać w wyzwania, potrzebujesz 900 gwiazdek i co najmniej 30 Pokémonów. Rozpoczęcie wyzwania zresetuje Twoje bieżące postępy na tej trasie.",
 		],
@@ -374,7 +374,7 @@ export const text = {
 		  	"Contiene un Pokémon.",
 		  	"Enthält ein Pokémon.",
 		  	"ポケモンが入っている。",
-		    "포켓몬이 들어 있습니다.",
+		    "권속이 들어 있습니다.",
 		    "包含一个宝可梦。",
 			"Zawiera Pokémona.",
 		],
@@ -399,7 +399,7 @@ export const text = {
 				"Il livello massimo dei tuoi Pokémon è limitato",
 				"Das maximale Level deiner Pokémon wird begrenzt",
 				"ポケモンの最大レベルが制限される",
-				"포켓몬의 최대 레벨이 제한된다",
+				"권속의 최대 레벨이 제한된다",
 				"宝可梦的最高等级受到限制",
 				"Maksymalny poziom twoich Pokémonów zostaje ograniczony"
 			],
@@ -437,7 +437,7 @@ export const text = {
 				"Il numero di Pokémon che puoi portare è limitato",
 				"Die Anzahl der Pokémon, die du mitnehmen kannst, ist begrenzt",
 				"連れて行けるポケモンの数が制限される",
-				"데려갈 수 있는 포켓몬의 수가 제한된다",
+				"데려갈 수 있는 권속의 수가 제한된다",
 				"可携带的宝可梦数量受到限制",
 				"Liczba Pokémonów, które możesz zabrać, zostaje ograniczona"
 			],
@@ -501,7 +501,7 @@ export const text = {
 				"Dovrai selezionare il tuo team Pokémon in una fase di Draft all'inizio della sfida.",
 				"Du musst dein Pokémon-Team zu Beginn der Herausforderung in einer Draft-Phase auswählen.",
 				"チャレンジ開始時に、ドラフトフェーズでポケモンチームを選択する必要があります。",
-				"도전 시작 시 드래프트 단계에서 포켓몬 팀을 선택해야 합니다.",
+				"도전 시작 시 드래프트 단계에서 권속 팀을 선택해야 합니다.",
 				"你需要在挑战开始时的选秀阶段选择你的宝可梦队伍。",
 			"Na początku wyzwania musisz wybrać swoją drużynę Pokémonów w fazie draftu.",
 			],
