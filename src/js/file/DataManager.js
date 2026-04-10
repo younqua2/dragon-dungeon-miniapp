@@ -44,7 +44,7 @@ function createDefaultData() {
                 gems: 10,
                 adTickets: 3,
                 manaStones: 0,
-                stats: { attack: 10, health: 100 }
+                stats: { attack: 10, health: 100, currentHp: 100 }
             },
             dungeon: {
                 gridSize: 8,
@@ -94,6 +94,10 @@ export function loadData(userId = 'guest') {
     }
     if (data.save && !data.save.fragments) {
         data.save.fragments = {};
+    }
+    // 드래곤 currentHp 마이그레이션
+    if (data.save?.dragon?.stats && data.save.dragon.stats.currentHp === undefined) {
+        data.save.dragon.stats.currentHp = data.save.dragon.stats.health;
     }
 
     return data;

@@ -43,6 +43,11 @@ export class RoomBattle {
             const ability = specieData?.ability || null;
             const attackType = specieData?.attackType || 'single';
 
+            // 스프라이트 이미지 로드
+            const spriteImg = new Image();
+            spriteImg.src = p.spritePath || specieData?.sprite?.image || '';
+            const spriteFrames = p.frames || specieData?.sprite?.frames || 1;
+
             return {
                 name: p.name,
                 key: p.key,
@@ -60,7 +65,11 @@ export class RoomBattle {
                 maxHp: 50 + level * 20,
                 flash: 0,
                 sturdyUsed: false,
-                moxieStacks: 0
+                moxieStacks: 0,
+                spriteImg,
+                spriteFrames,
+                spriteFrame: 0,
+                spriteTimer: 0
             };
         });
 
@@ -110,6 +119,12 @@ export class RoomBattle {
             if (atk.hp <= 0) continue;
             atk.cooldown -= delta;
             atk.flash = Math.max(0, atk.flash - delta);
+            // 스프라이트 애니메이션
+            atk.spriteTimer += delta;
+            if (atk.spriteTimer > 200) {
+                atk.spriteTimer = 0;
+                atk.spriteFrame = (atk.spriteFrame + 1) % (atk.spriteFrames || 1);
+            }
 
             if (atk.cooldown <= 0) {
                 atk.cooldown = atk.attackSpeed;
@@ -475,17 +490,32 @@ export class RoomBattle {
         for (const atk of this.attackers) {
             if (atk.hp <= 0) continue;
 
-            // 피격 플래시
             const isFlash = atk.flash > 0;
-            ctx.fillStyle = isFlash ? '#fff' : '#e74c3c';
-            ctx.beginPath();
-            ctx.arc(atk.x, atk.y, 12, 0, Math.PI * 2);
-            ctx.fill();
 
-            // 외곽선
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+            // 스프라이트 이미지 또는 폴백 원형
+            if (atk.spriteImg && atk.spriteImg.complete && atk.spriteImg.naturalWidth > 0) {
+                const frameW = atk.spriteImg.naturalWidth / (atk.spriteFrames || 1);
+                const frameH = atk.spriteImg.naturalHeight;
+                const drawSize = 28;
+                if (isFlash) { ctx.globalAlpha = 0.5; }
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(
+                    atk.spriteImg,
+                    (atk.spriteFrame || 0) * frameW, 0, frameW, frameH,
+                    atk.x - drawSize / 2, atk.y - drawSize / 2, drawSize, drawSize
+                );
+                ctx.imageSmoothingEnabled = true;
+                if (isFlash) { ctx.globalAlpha = 1.0; }
+            } else {
+                // 폴백: 원형
+                ctx.fillStyle = isFlash ? '#fff' : '#e74c3c';
+                ctx.beginPath();
+                ctx.arc(atk.x, atk.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
 
             // HP 바
             const hpRatio = Math.max(0, atk.hp / atk.maxHp);

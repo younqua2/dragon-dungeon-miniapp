@@ -111,15 +111,39 @@ export class DungeonCanvas {
 
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const rect = e.target.getBoundingClientRect();
-            const touch = e.targetTouches[0];
-            const scaleX = this.canvas.width / rect.width;
-            const scaleY = this.canvas.height / rect.height;
-            const x = (touch.clientX - rect.left) * scaleX;
-            const y = (touch.clientY - rect.top) * scaleY;
-            const cell = this._eventToCell(x, y);
+            const cell = this._touchToCell(e);
             if (cell) this._handleCellClick(cell.col, cell.row);
         }, { passive: false });
+
+        // 터치 드래그로 통로 연속 배치
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!this.ghostRoom || this.ghostRoom.typeKey !== 'corridor') return;
+            const cell = this._touchToCell(e);
+            if (cell && (!this._lastDragCell || cell.col !== this._lastDragCell.col || cell.row !== this._lastDragCell.row)) {
+                this._lastDragCell = cell;
+                this.tryPlaceGhostRoom(cell.col, cell.row);
+                // 통로는 연속 배치: ghostRoom 유지
+                if (!this.ghostRoom) {
+                    this.ghostRoom = { template: ROOM_TEMPLATES.single, typeKey: 'corridor', rotation: 0 };
+                }
+            }
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchend', () => {
+            this._lastDragCell = null;
+        });
+    }
+
+    _touchToCell(e) {
+        const rect = e.target.getBoundingClientRect();
+        const touch = e.targetTouches[0];
+        if (!touch) return null;
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+        return this._eventToCell(x, y);
     }
 
     _eventToCell(x, y) {
@@ -206,8 +230,21 @@ export class DungeonCanvas {
         // 세이브에 반영 + 이벤트 저장
         this.main.data.dungeon = this.grid.serialize();
         this.main.saveOnEvent('room_placed');
+        playSound('button1', 'ui');
         if (this.main.UI) this.main.UI.showToast(`${ROOM_TYPES[typeKey]?.name || '방'} 건설!`, 'success');
-        this.ghostRoom = null;
+
+        // 경로가 완성되면 웨이브 자동 시작
+        if (this.main.invasionWave && !this.main.invasionWave.isActive && this.grid.hasValidPath()) {
+            this.main.invasionWave.start();
+            if (this.main.UI) this.main.UI.showToast('웨이브 시작!', 'info');
+        }
+
+        // 통로는 연속 배치 유지
+        if (typeKey === 'corridor') {
+            this.ghostRoom = { template: ROOM_TEMPLATES.single, typeKey: 'corridor', rotation: 0 };
+        } else {
+            this.ghostRoom = null;
+        }
         this.selectedCell = { col: anchorCol, row: anchorRow };
         if (this.main.UI) this.main.UI.update();
         return true;
@@ -218,6 +255,17 @@ export class DungeonCanvas {
         if (!this.selectedCell) return false;
         const room = this.grid.getRoomAt(this.selectedCell.col, this.selectedCell.row);
         if (!room) return false;
+
+        // 배치된 권속 자동 회수
+        if (room.deployedPokemon && room.deployedPokemon.length > 0) {
+            if (!this.main.data.monsters) this.main.data.monsters = [];
+            for (const p of room.deployedPokemon) {
+                this.main.data.monsters.push({ ...p });
+            }
+            const cx = this.PADDING + this.selectedCell.col * this.CELL_SIZE + this.CELL_SIZE / 2;
+            const cy = this.PADDING + this.selectedCell.row * this.CELL_SIZE + this.CELL_SIZE / 2;
+            this.addFloatingText(cx, cy + 20, `권속 ${room.deployedPokemon.length}마리 회수`, '#00e5ff');
+        }
 
         // 환불 (50%)
         const type = ROOM_TYPES[room.type];
