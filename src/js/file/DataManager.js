@@ -55,6 +55,7 @@ function createDefaultData() {
             monsters: _createStarterMonsters(),
             capturedHeroes: [],
             fragments: {},  // 카드조각: { pokemonKey: count }
+            waveNum: 1,
             stats: {
                 heroesDefeated: 0,
                 totalGoldEarned: 0,
@@ -119,6 +120,8 @@ export function savePartial(updates) {
     if (updates.monsters) data.save.monsters = updates.monsters;
     if (updates.capturedHeroes) data.save.capturedHeroes = updates.capturedHeroes;
     if (updates.stats) data.save.stats = updates.stats;
+    if (updates.fragments) data.save.fragments = updates.fragments;
+    if (updates.waveNum !== undefined) data.save.waveNum = updates.waveNum;
     if (updates.config) data.config = updates.config;
 
     saveData(data);

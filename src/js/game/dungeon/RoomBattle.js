@@ -1,4 +1,5 @@
 import { pokemonData } from '../data/pokemonData.js';
+import { playSound } from '../../file/audio.js';
 
 /**
  * RoomBattle - 전투방 진입 시 실시간 TD 전투 시뮬레이션
@@ -80,6 +81,7 @@ export class RoomBattle {
 
         // 전투 시작 알림
         this.canvas.addFloatingText(hero.x, hero.y - 40, 'BATTLE!', '#ff4');
+        playSound('hit2', 'effect');
 
         // 드래곤 참전 여부 (드래곤 둥지 인접 방이면 드래곤 지원)
         this.dragonSupport = this._checkDragonSupport();
@@ -415,6 +417,7 @@ export class RoomBattle {
                                 this.hero.y - 65,
                                 `${oldName} → ${p.name} 진화!`, '#ff00ff'
                             );
+                            playSound('shiny', 'effect');
                         }
                     }
                 }

@@ -100,7 +100,8 @@ export const ROOM_TYPES = {
         color: '#27ae60',
         baseCost: 200,
         effect: 'exp_regen',
-        expPerMinute: 5
+        expPerMinute: 5,
+        maxPokemon: 2
     }
 };
 

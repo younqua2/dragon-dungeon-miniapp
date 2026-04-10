@@ -43,20 +43,26 @@ export class AppController {
         if (typeof this.UI.update === 'function') this.UI.update();
         if (typeof this.game.load === 'function') this.game.load();
 
-        // 웨이브 시스템 시작 (경로가 존재하면 자동 시작)
-        this.invasionWave = new InvasionWave(this.game);
+        // 웨이브 시스템 시작 (저장된 웨이브 번호 복원)
+        this.invasionWave = new InvasionWave(this.game, this.data.waveNum || 1);
         if (this.game.grid.hasValidPath()) {
             this.invasionWave.start();
         }
     }
 
     save(reason) {
+        // 웨이브 번호 동기화
+        if (this.invasionWave) {
+            this.data.waveNum = this.invasionWave.waveNum;
+        }
         savePartial({
             dragon: this.data.dragon,
             dungeon: this.data.dungeon,
             monsters: this.data.monsters,
             capturedHeroes: this.data.capturedHeroes,
-            stats: this.data.stats
+            fragments: this.data.fragments,
+            stats: this.data.stats,
+            waveNum: this.data.waveNum
         });
     }
 

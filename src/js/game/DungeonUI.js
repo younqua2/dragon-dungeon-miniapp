@@ -24,9 +24,9 @@ export class DungeonUI {
         this.statusBar.className = 'status-bar';
         this.statusBar.innerHTML = `
             <div class="status-item"><span class="status-label">침입자</span><span class="status-value" id="ui-invaders" style="color:var(--orange)">0명</span></div>
-            <div class="status-item"><span class="status-label">드래곤</span><span class="status-value" id="ui-dragon-stage" style="color:var(--red)">해츨링 lv.1</span></div>
+            <div class="status-item"><span class="status-label">🐉 HP</span><span class="status-value" id="ui-dragon-hp" style="color:#f44">100</span></div>
+            <div class="status-item"><span class="status-label">드래곤</span><span class="status-value" id="ui-dragon-stage" style="color:var(--red)">해츨링</span></div>
             <div class="status-item"><span class="status-label">방</span><span class="status-value" id="ui-room-count" style="color:var(--blue, #3af)">0개</span></div>
-            <div class="status-item"><span class="status-label">전투</span><span class="status-value" id="ui-battles" style="color:#f44">0</span></div>
             <div class="status-item"><span class="status-label">골드</span><span class="status-value" id="ui-gold">0 G</span></div>
         `;
 
@@ -42,6 +42,7 @@ export class DungeonUI {
             <span>웨이브 <span class="wave-num" id="ui-wave-num">1</span></span>
             <span>처치 <span id="ui-heroes-defeated">0</span></span>
             <span class="wave-heroes" id="ui-wave-status">대기 중</span>
+            <button id="btn-wave-toggle" style="background:#444; color:#fff; border:1px solid #666; padding:4px 12px; font-size:12px; cursor:pointer; font-family:PressStart2P,monospace; border-radius:4px;">⏸</button>
         `;
         this.dungeonArea.appendChild(this.waveInfoBar);
 
@@ -55,6 +56,7 @@ export class DungeonUI {
         `;
         this.dungeonArea.appendChild(this.speedControls);
         this._bindSpeedControls();
+        this._bindWaveToggle();
 
         // 토스트 컨테이너
         this.toastContainer = document.createElement('div');
@@ -188,6 +190,16 @@ export class DungeonUI {
                     🗑️ 철거<br><span style="font-size:10px; color:#aaa;">50% 환불</span>
                 </div>
             </div>
+
+            ${selectedRoom && selectedRoom.type !== 'corridor' ? `
+            <div class="ui-grid" style="grid-template-columns: repeat(2, 1fr); margin-top:8px; border-top:1px solid #444; padding-top:8px;">
+                <div class="ui-btn" id="btn-upgrade" style="background:#1a4c3a;">
+                    ⬆ 업그레이드<br><span style="font-size:10px; color:gold;">-${(selectedRoom.level || 1) * 100}G</span>
+                </div>
+                <div class="ui-btn" id="btn-retrieve" style="background:#3a3a1a;">
+                    📦 권속 회수<br><span style="font-size:10px; color:#aaa;">배치 해제</span>
+                </div>
+            </div>` : ''}
         `;
 
         this._bindDungeonEvents();
@@ -240,6 +252,48 @@ export class DungeonUI {
         const btnDestroy = document.getElementById('btn-destroy');
         if (btnDestroy) btnDestroy.addEventListener('click', () => {
             this.main.game.removeSelectedRoom();
+        });
+
+        // 방 업그레이드
+        const btnUpgrade = document.getElementById('btn-upgrade');
+        if (btnUpgrade) btnUpgrade.addEventListener('click', () => {
+            const game = this.main.game;
+            if (!game.selectedCell) return;
+            const room = game.grid.getRoomAt(game.selectedCell.col, game.selectedCell.row);
+            if (!room) return;
+            const cost = (room.level || 1) * 100;
+            if (this.main.data.dragon.gold >= cost) {
+                this.main.data.dragon.gold -= cost;
+                room.level = (room.level || 1) + 1;
+                this.main.data.dungeon = game.grid.serialize();
+                this.main.saveOnEvent('upgrade_room');
+                this._showMsg(`${ROOM_TYPES[room.type]?.name || room.type} Lv.${room.level}로 업그레이드!`, '#0f0');
+                this.renderTabContent();
+            } else {
+                this._showMsg(`골드 부족! (필요: ${cost}G)`, '#f44');
+            }
+        });
+
+        // 권속 회수
+        const btnRetrieve = document.getElementById('btn-retrieve');
+        if (btnRetrieve) btnRetrieve.addEventListener('click', () => {
+            const game = this.main.game;
+            if (!game.selectedCell) return;
+            const room = game.grid.getRoomAt(game.selectedCell.col, game.selectedCell.row);
+            if (!room || !room.deployedPokemon || room.deployedPokemon.length === 0) {
+                this._showMsg('회수할 권속이 없습니다', '#888');
+                return;
+            }
+            if (!this.main.data.monsters) this.main.data.monsters = [];
+            for (const p of room.deployedPokemon) {
+                this.main.data.monsters.push({ ...p });
+            }
+            const count = room.deployedPokemon.length;
+            room.deployedPokemon = [];
+            this.main.data.dungeon = game.grid.serialize();
+            this.main.saveOnEvent('retrieve');
+            this._showMsg(`권속 ${count}마리 회수 완료!`, '#00e5ff');
+            this.renderTabContent();
         });
     }
 
@@ -332,12 +386,13 @@ export class DungeonUI {
                 }
 
                 const room = game.grid.getRoomAt(game.selectedCell.col, game.selectedCell.row);
-                if (!room || room.type !== 'combat') {
-                    this._showMsg('전투방에만 유닛을 배치할 수 있습니다', '#f44');
+                if (!room || (room.type !== 'combat' && room.type !== 'barracks')) {
+                    this._showMsg('전투방 또는 훈련소에만 배치 가능', '#f44');
                     return;
                 }
 
-                const maxPokemon = ROOM_TYPES.combat.maxPokemon;
+                const roomType = ROOM_TYPES[room.type];
+                const maxPokemon = roomType?.maxPokemon || 3;
                 if (room.deployedPokemon.length >= maxPokemon) {
                     this._showMsg(`이 방에는 최대 ${maxPokemon}마리까지 배치 가능`, '#f44');
                     return;
@@ -557,6 +612,28 @@ export class DungeonUI {
         this.speedControls.querySelector('[data-speed="1"]')?.classList.add('active');
     }
 
+    _bindWaveToggle() {
+        const btn = document.getElementById('btn-wave-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const wave = this.main.invasionWave;
+            if (!wave) return;
+            if (wave.isActive) {
+                wave.stop();
+                btn.textContent = '▶';
+                btn.style.background = '#1a5c1a';
+            } else {
+                if (this.main.game?.grid.hasValidPath()) {
+                    wave.start();
+                    btn.textContent = '⏸';
+                    btn.style.background = '#444';
+                } else {
+                    this._showMsg('유효한 경로가 없습니다!', '#f44');
+                }
+            }
+        });
+    }
+
     /** 토스트 알림 표시 */
     showToast(message, type = 'info') {
         const toast = document.createElement('div');
@@ -564,6 +641,31 @@ export class DungeonUI {
         toast.textContent = message;
         this.toastContainer.appendChild(toast);
         setTimeout(() => toast.remove(), 2200);
+    }
+
+    /** 게임오버 오버레이 */
+    showGameOver({ waves, defeated, gold }) {
+        const overlay = document.createElement('div');
+        overlay.id = 'gameover-overlay';
+        overlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:PressStart2P,monospace;';
+        overlay.innerHTML = `
+            <div style="font-size:32px; color:#f44; margin-bottom:20px;">GAME OVER</div>
+            <div style="font-size:16px; color:#ff8800; margin-bottom:30px;">드래곤이 쓰러졌습니다!</div>
+            <div style="font-size:14px; line-height:2.2; text-align:center;">
+                <span style="color:#aaa;">도달 웨이브:</span> <span style="color:#0af;">${waves}</span><br>
+                <span style="color:#aaa;">처치한 영웅:</span> <span style="color:#0f0;">${defeated}</span><br>
+                <span style="color:#aaa;">최종 골드:</span> <span style="color:gold;">${gold.toLocaleString()}G</span>
+            </div>
+            <button id="btn-restart" style="margin-top:40px; padding:16px 40px; font-size:16px; font-family:PressStart2P,monospace; background:#c0392b; color:#fff; border:none; cursor:pointer; border-radius:8px;">
+                처음부터 다시
+            </button>
+        `;
+        document.body.appendChild(overlay);
+
+        document.getElementById('btn-restart')?.addEventListener('click', () => {
+            window.localStorage.removeItem('data');
+            window.location.reload();
+        });
     }
 
     _showMsg(text, color = '#fff') {
@@ -589,9 +691,18 @@ export class DungeonUI {
             }
         }
 
+        // 드래곤 HP
+        const currentHp = dragon.stats.currentHp ?? dragon.stats.health;
+        const maxHp = dragon.stats.health;
+        const uiHp = document.getElementById('ui-dragon-hp');
+        if (uiHp) {
+            uiHp.innerText = `${currentHp}/${maxHp}`;
+            uiHp.style.color = currentHp > maxHp * 0.5 ? '#0f0' : currentHp > maxHp * 0.25 ? '#ff0' : '#f00';
+        }
+
         const stages = ['해츨링', '청소년기', '장년기', '고룡', '재앙'];
         const uiStage = document.getElementById('ui-dragon-stage');
-        if (uiStage) uiStage.innerText = (stages[dragon.stage] || '초월개체') + ' Lv.' + (dragon.stage + 1);
+        if (uiStage) uiStage.innerText = stages[dragon.stage] || '초월개체';
 
         // 웨이브 정보
         const wave = this.main.invasionWave;
@@ -599,7 +710,15 @@ export class DungeonUI {
             const waveNum = document.getElementById('ui-wave-num');
             if (waveNum) waveNum.innerText = wave.waveNum;
             const waveStatus = document.getElementById('ui-wave-status');
-            if (waveStatus) waveStatus.innerText = wave.isActive ? '진행 중' : '대기 중';
+            if (waveStatus) {
+                if (wave.isBossWave?.()) {
+                    waveStatus.innerText = '⚠ BOSS';
+                    waveStatus.style.color = '#ff0000';
+                } else {
+                    waveStatus.innerText = wave.isActive ? '진행 중' : '대기 중';
+                    waveStatus.style.color = '';
+                }
+            }
         }
         const defeated = document.getElementById('ui-heroes-defeated');
         if (defeated && this.main.data.stats) defeated.innerText = this.main.data.stats.heroesDefeated || 0;

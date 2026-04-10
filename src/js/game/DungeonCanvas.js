@@ -1,7 +1,9 @@
 import { DungeonGrid } from './dungeon/DungeonGrid.js';
 import { ROOM_TEMPLATES } from './dungeon/RoomTemplate.js';
 import { ROOM_TYPES } from './data/roomData.js';
+import { pokemonData } from './data/pokemonData.js';
 import { RoomBattle } from './dungeon/RoomBattle.js';
+import { playSound } from '../file/audio.js';
 
 /**
  * DungeonCanvas — 8x8 비스포크 던전 그리드 캔버스 렌더링 + 영웅 이동
@@ -557,13 +559,28 @@ export class DungeonCanvas {
                     continue;
                 }
 
-                // 현재 위치가 둥지면 처리
+                // 현재 위치가 둥지면 처리 — 드래곤에게 피해
                 if (hero.currentCell.col === this.grid.dragonNest.col &&
                     hero.currentCell.row === this.grid.dragonNest.row) {
-                    this.main.data.dragon.gold += hero.gold;
-                    this.addFloatingText(hero.x, hero.y, `+${hero.gold}G`, '#8a2be2');
-                    if (this.main.UI) this.main.UI.update();
+                    const dragon = this.main.data.dragon;
+                    const dmg = Math.max(10, hero.health);
+                    dragon.stats.currentHp = (dragon.stats.currentHp ?? dragon.stats.health) - dmg;
+                    this.addFloatingText(hero.x, hero.y, `드래곤 -${dmg}HP!`, '#ff0000');
+                    playSound('hit3', 'effect');
+
+                    // 영웅이 가져온 골드는 드래곤이 탈취 (보상)
+                    dragon.gold += hero.gold;
+                    this.addFloatingText(hero.x, hero.y - 20, `+${hero.gold}G`, '#8a2be2');
+
                     this.heroes.splice(i, 1);
+
+                    // 게임오버 체크
+                    if (dragon.stats.currentHp <= 0) {
+                        dragon.stats.currentHp = 0;
+                        this._triggerGameOver();
+                    }
+
+                    if (this.main.UI) this.main.UI.update();
                     continue;
                 }
 
@@ -742,6 +759,23 @@ export class DungeonCanvas {
                         const cx = this.PADDING + (room.cells[0].col + 0.5) * this.CELL_SIZE;
                         const cy = this.PADDING + (room.cells[0].row + 0.5) * this.CELL_SIZE;
                         this.addFloatingText(cx, cy, `${p.name} Lv.UP!`, '#27ae60');
+
+                        // 진화 체크
+                        const specieData = pokemonData[p.key];
+                        if (specieData?.evolution && p.level >= specieData.evolution.level) {
+                            const evoKey = specieData.evolution.pokemon;
+                            const evoData = pokemonData[evoKey];
+                            if (evoData) {
+                                const oldName = p.name;
+                                p.key = evoKey;
+                                p.name = evoData.name[7] || evoData.name[0];
+                                p.spritePath = evoData.sprite.image;
+                                p.frames = evoData.sprite.frames;
+                                p.hold = evoData.sprite.hold;
+                                this.addFloatingText(cx, cy - 20, `${oldName} → ${p.name} 진화!`, '#ff00ff');
+                                playSound('shiny', 'effect');
+                            }
+                        }
                     }
                 }
             }
@@ -769,6 +803,7 @@ export class DungeonCanvas {
                 mana: Math.floor(Math.random() * 3) + 1
             });
             this.addFloatingText(hero.x, hero.y, 'CAPTURED!', '#60bec7');
+            playSound('obtain', 'ui');
         } else {
             this.addFloatingText(hero.x, hero.y, 'DEAD', '#aaa');
         }
@@ -823,6 +858,27 @@ export class DungeonCanvas {
         // 상위 2개 중 랜덤 선택 (경로에 변화를 줌)
         const topN = Math.min(2, candidates.length);
         return candidates[Math.floor(Math.random() * topN)];
+    }
+
+    /** 게임오버 처리 */
+    _triggerGameOver() {
+        this.stopped = true;
+        this.heroes = [];
+        this.activeBattles = [];
+
+        // 웨이브 중지
+        if (this.main.invasionWave) {
+            this.main.invasionWave.stop();
+        }
+
+        // 게임오버 UI 표시
+        if (this.main.UI) {
+            this.main.UI.showGameOver({
+                waves: this.main.invasionWave?.waveNum || 1,
+                defeated: this.main.data.stats?.heroesDefeated || 0,
+                gold: this.main.data.dragon?.gold || 0
+            });
+        }
     }
 
     /** 영웅 스폰 (InvasionWave에서 호출) */
