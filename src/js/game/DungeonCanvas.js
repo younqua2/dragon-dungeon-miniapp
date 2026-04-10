@@ -233,10 +233,9 @@ export class DungeonCanvas {
         playSound('button1', 'ui');
         if (this.main.UI) this.main.UI.showToast(`${ROOM_TYPES[typeKey]?.name || '방'} 건설!`, 'success');
 
-        // 경로가 완성되면 웨이브 자동 시작
-        if (this.main.invasionWave && !this.main.invasionWave.isActive && this.grid.hasValidPath()) {
-            this.main.invasionWave.start();
-            if (this.main.UI) this.main.UI.showToast('웨이브 시작!', 'info');
+        // 경로 완성 알림 (자동 시작 안 함 — 수동 ▶ 버튼)
+        if (this.grid.hasValidPath() && !(this.main.invasionWave?.isActive)) {
+            if (this.main.UI) this.main.UI.showToast('경로 완성! ▶ 버튼으로 웨이브 시작', 'info');
         }
 
         // 통로는 연속 배치 유지
@@ -371,6 +370,27 @@ export class DungeonCanvas {
         // ── 입구 / 둥지 ──
         this._drawFixedPoint(ctx, this.grid.entrance, '🚪', '#00CED1', P, CS);
         this._drawFixedPoint(ctx, this.grid.dragonNest, '🐉', '#8a2be2', P, CS);
+        // 드래곤 HP 바 (둥지 위에)
+        const dragon = this.main.data.dragon;
+        if (dragon) {
+            const nx = P + this.grid.dragonNest.col * CS;
+            const ny = P + this.grid.dragonNest.row * CS;
+            const currentHp = dragon.stats.currentHp ?? dragon.stats.health;
+            const maxHp = dragon.stats.health;
+            const hpRatio = Math.max(0, currentHp / maxHp);
+            const barW = CS - 8;
+            // HP 바 배경
+            ctx.fillStyle = '#300';
+            ctx.fillRect(nx + 4, ny - 8, barW, 7);
+            // HP 바
+            ctx.fillStyle = hpRatio > 0.5 ? '#0f0' : hpRatio > 0.25 ? '#ff0' : '#f00';
+            ctx.fillRect(nx + 4, ny - 8, barW * hpRatio, 7);
+            // HP 텍스트
+            ctx.font = '9px PressStart2P, monospace';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${currentHp}/${maxHp}`, nx + CS / 2, ny - 12);
+        }
 
         // ── 고스트 프리뷰 (배치 모드) ──
         if (this.ghostRoom && this.hoveredCell) {
@@ -503,11 +523,41 @@ export class DungeonCanvas {
             ctx.globalAlpha = 1.0;
         }
 
-        // 배치된 권속 수 표시
+        // 배치된 권속 스프라이트 표시
         if (room.deployedPokemon && room.deployedPokemon.length > 0) {
-            ctx.font = '12px PressStart2P, monospace';
+            for (let pi = 0; pi < room.deployedPokemon.length; pi++) {
+                const p = room.deployedPokemon[pi];
+                const cellIdx = pi % room.cells.length;
+                const pCell = room.cells[cellIdx];
+                const px = P + (pCell.col + 0.3 + pi * 0.2) * CS;
+                const py = P + (pCell.row + 0.7) * CS;
+
+                // 스프라이트 이미지 로드 및 표시
+                if (!p._spriteImg) {
+                    p._spriteImg = new Image();
+                    p._spriteImg.src = p.spritePath || '';
+                }
+                const img = p._spriteImg;
+                if (img.complete && img.naturalWidth > 0) {
+                    const frameW = img.naturalWidth / (p.frames || 1);
+                    const frameH = img.naturalHeight;
+                    const frame = Math.floor(Date.now() / 300) % (p.frames || 1);
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(img, frame * frameW, 0, frameW, frameH, px - 12, py - 12, 24, 24);
+                    ctx.imageSmoothingEnabled = true;
+                } else {
+                    // 폴백: 이름 표시
+                    ctx.font = '9px PressStart2P, monospace';
+                    ctx.fillStyle = '#ff0';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(p.name.substring(0, 3), px, py);
+                }
+            }
+            // 개수 뱃지
+            ctx.font = '11px PressStart2P, monospace';
             ctx.fillStyle = '#ff0';
-            ctx.fillText(`x${room.deployedPokemon.length}`, cx + 30, cy - 20);
+            ctx.textAlign = 'center';
+            ctx.fillText(`x${room.deployedPokemon.length}`, cx + 35, cy - 25);
         }
 
         // 수용 현황 표시 (통로/패시브 제외)
@@ -774,26 +824,29 @@ export class DungeonCanvas {
             color = '#888';
         }
 
-        // 몸체
+        // 몸체 (배경 원)
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.arc(hero.x, hero.y, radius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = hero.heroColor || '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-        // 상태 아이콘
+        // 영웅 이모지 표시
+        ctx.font = `${radius + 4}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         if (isWaiting) {
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('⏳', hero.x, hero.y + 4);
+            ctx.fillText('⏳', hero.x, hero.y);
         } else if (isImprisoned) {
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('🔒', hero.x, hero.y + 4);
+            ctx.fillText('🔒', hero.x, hero.y);
         } else if (isDwelling && !inCombat) {
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('💫', hero.x, hero.y + 4);
+            ctx.fillText('💫', hero.x, hero.y);
+        } else {
+            ctx.fillText(hero.emoji || '🧑', hero.x, hero.y);
         }
+        ctx.textBaseline = 'alphabetic';
 
         // HP 바
         const barW = 36;
@@ -1052,6 +1105,8 @@ export class DungeonCanvas {
             gold: heroData.gold || 80,
             attackMod: 1,
             isBoss: heroData.isBoss || false,
+            emoji: heroData.emoji || '🧑',
+            heroColor: heroData.color || '#fff',
             currentCell: { ...this.grid.entrance },
             previousCell: null,
             nextCell: null,

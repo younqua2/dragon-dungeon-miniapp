@@ -3,14 +3,14 @@
  */
 
 const HERO_TYPES = [
-    { name: '견습 용사', health: 150, gold: 50, speed: 0.10, isBoss: false },
-    { name: '떠돌이 검사', health: 200, gold: 80, speed: 0.12, isBoss: false },
-    { name: '현상금 사냥꾼', health: 250, gold: 120, speed: 0.14, isBoss: false },
-    { name: '마법사', health: 180, gold: 100, speed: 0.11, isBoss: false },
-    { name: '도적', health: 160, gold: 150, speed: 0.18, isBoss: false },
-    { name: '기사', health: 400, gold: 100, speed: 0.08, isBoss: false },
-    { name: '왕실 기사단장', health: 600, gold: 200, speed: 0.09, isBoss: true },
-    { name: '레오하르트 3세', health: 1000, gold: 500, speed: 0.07, isBoss: true },
+    { name: '견습 용사', health: 150, gold: 50, speed: 0.10, isBoss: false, emoji: '🧑', color: '#aaddff' },
+    { name: '떠돌이 검사', health: 200, gold: 80, speed: 0.12, isBoss: false, emoji: '⚔️', color: '#cccccc' },
+    { name: '현상금 사냥꾼', health: 250, gold: 120, speed: 0.14, isBoss: false, emoji: '🏹', color: '#88cc66' },
+    { name: '마법사', health: 180, gold: 100, speed: 0.11, isBoss: false, emoji: '🧙', color: '#aa88ff' },
+    { name: '도적', health: 160, gold: 150, speed: 0.18, isBoss: false, emoji: '🗡️', color: '#888888' },
+    { name: '기사', health: 400, gold: 100, speed: 0.08, isBoss: false, emoji: '🛡️', color: '#4488cc' },
+    { name: '왕실 기사단장', health: 600, gold: 200, speed: 0.09, isBoss: true, emoji: '👑', color: '#ffcc44' },
+    { name: '레오하르트 3세', health: 1000, gold: 500, speed: 0.07, isBoss: true, emoji: '👑', color: '#ff4444' },
 ];
 
 /**
@@ -37,7 +37,9 @@ export function createHero(waveNum) {
         health: Math.floor(type.health * scaleFactor),
         gold: Math.floor(type.gold * scaleFactor),
         speed: type.speed + Math.random() * 0.03,
-        isBoss: type.isBoss
+        isBoss: type.isBoss,
+        emoji: type.emoji,
+        color: type.color
     };
 }
 

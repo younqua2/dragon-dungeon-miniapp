@@ -42,7 +42,7 @@ export class DungeonUI {
             <span>웨이브 <span class="wave-num" id="ui-wave-num">1</span></span>
             <span>처치 <span id="ui-heroes-defeated">0</span></span>
             <span class="wave-heroes" id="ui-wave-status">대기 중</span>
-            <button id="btn-wave-toggle" style="background:#444; color:#fff; border:1px solid #666; padding:4px 12px; font-size:12px; cursor:pointer; font-family:PressStart2P,monospace; border-radius:4px;">⏸</button>
+            <button id="btn-wave-toggle" style="background:#1a5c1a; color:#fff; border:1px solid #666; padding:4px 12px; font-size:14px; cursor:pointer; font-family:PressStart2P,monospace; border-radius:4px;">▶ 시작</button>
         `;
         this.dungeonArea.appendChild(this.waveInfoBar);
 
@@ -620,15 +620,17 @@ export class DungeonUI {
             if (!wave) return;
             if (wave.isActive) {
                 wave.stop();
-                btn.textContent = '▶';
+                btn.textContent = '▶ 시작';
                 btn.style.background = '#1a5c1a';
+                this.showToast('웨이브 일시정지', 'info');
             } else {
                 if (this.main.game?.grid.hasValidPath()) {
                     wave.start();
-                    btn.textContent = '⏸';
-                    btn.style.background = '#444';
+                    btn.textContent = '⏸ 정지';
+                    btn.style.background = '#c0392b';
+                    this.showToast(`웨이브 ${wave.waveNum} 시작!`, 'success');
                 } else {
-                    this._showMsg('유효한 경로가 없습니다!', '#f44');
+                    this.showToast('입구에서 둥지까지 경로를 먼저 만드세요!', 'error');
                 }
             }
         });

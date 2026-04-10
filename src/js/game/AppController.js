@@ -43,11 +43,8 @@ export class AppController {
         if (typeof this.UI.update === 'function') this.UI.update();
         if (typeof this.game.load === 'function') this.game.load();
 
-        // 웨이브 시스템 시작 (저장된 웨이브 번호 복원)
+        // 웨이브 시스템 초기화 (수동 시작 — 자동 시작 안 함)
         this.invasionWave = new InvasionWave(this.game, this.data.waveNum || 1);
-        if (this.game.grid.hasValidPath()) {
-            this.invasionWave.start();
-        }
     }
 
     save(reason) {
