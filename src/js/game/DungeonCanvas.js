@@ -509,6 +509,17 @@ export class DungeonCanvas {
             ctx.fillStyle = '#ff0';
             ctx.fillText(`x${room.deployedPokemon.length}`, cx + 30, cy - 20);
         }
+
+        // 수용 현황 표시 (통로/패시브 제외)
+        if (type && !isCorridor && type.capacity < 99) {
+            const heroCount = this._countHeroesInRoom(room.id);
+            if (heroCount > 0) {
+                ctx.font = '10px PressStart2P, monospace';
+                ctx.fillStyle = heroCount >= type.capacity ? '#f44' : '#0f0';
+                ctx.textAlign = 'center';
+                ctx.fillText(`👤${heroCount}/${type.capacity}`, cx, cy + 42);
+            }
+        }
     }
 
     _drawFixedPoint(ctx, point, emoji, color, P, CS) {
@@ -567,6 +578,17 @@ export class DungeonCanvas {
 
     // ═══════════ 영웅 시스템 ═══════════
 
+    /** 특정 방에 현재 체류 중인 영웅 수 */
+    _countHeroesInRoom(roomId) {
+        let count = 0;
+        for (const h of this.heroes) {
+            if (h.dwellingRoomId === roomId || (h.inBattle && h.inBattle.room?.id === roomId)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     _updateHeroes(ctx, scaledDelta, time, P, CS) {
         for (let i = this.heroes.length - 1; i >= 0; i--) {
             const hero = this.heroes[i];
@@ -574,7 +596,6 @@ export class DungeonCanvas {
             // 수감 중이면 탈옥 확률 체크
             if (hero.imprisoned) {
                 hero.imprisonTimer += scaledDelta;
-                // 매 1초마다 탈옥 확률 체크
                 if (hero.imprisonTimer >= 1000) {
                     hero.imprisonTimer -= 1000;
                     const room = hero.imprisonRoom;
@@ -582,6 +603,7 @@ export class DungeonCanvas {
                     if (Math.random() < escapeChance) {
                         hero.imprisoned = false;
                         hero.imprisonRoom = null;
+                        hero.dwellingRoomId = null;
                         this.addFloatingText(hero.x, hero.y - 20, '탈옥!', '#e74c3c');
                     }
                 }
@@ -589,13 +611,50 @@ export class DungeonCanvas {
                 continue;
             }
 
-            // 전투 중이면 이동 정지
+            // 전투 중이면 이동 정지 (방 안에 체류)
             if (hero.inBattle) {
                 if (!hero.inBattle.active) {
-                    hero.inBattle = null; // 전투 종료 → 이동 재개
+                    hero.inBattle = null;
+                    hero.dwellingRoomId = null;
                 } else {
                     this._drawHero(ctx, hero);
                     continue;
+                }
+            }
+
+            // 방 체류 중 (함정 헤매기, 디버프 효과 등)
+            if (hero.dwelling) {
+                hero.dwellTimer -= scaledDelta;
+                if (hero.dwellTimer <= 0) {
+                    hero.dwelling = false;
+                    hero.dwellingRoomId = null;
+                } else {
+                    // 체류 중 약간 흔들리는 모션
+                    hero.x += (Math.random() - 0.5) * 0.5;
+                    hero.y += (Math.random() - 0.5) * 0.5;
+                    this._drawHero(ctx, hero);
+                    continue;
+                }
+            }
+
+            // 대기 중 (방 정원 초과로 입장 불가)
+            if (hero.waiting) {
+                const waitRoom = hero.waitingForRoom;
+                if (waitRoom) {
+                    const type = ROOM_TYPES[waitRoom.type];
+                    const cap = type?.capacity || 99;
+                    if (this._countHeroesInRoom(waitRoom.id) < cap) {
+                        hero.waiting = false;
+                        hero.waitingForRoom = null;
+                    } else {
+                        // 대기 중 제자리 대기 모션
+                        hero.x += (Math.random() - 0.5) * 0.3;
+                        hero.y += (Math.random() - 0.5) * 0.3;
+                        this._drawHero(ctx, hero);
+                        continue;
+                    }
+                } else {
+                    hero.waiting = false;
                 }
             }
 
@@ -615,31 +674,46 @@ export class DungeonCanvas {
                     dragon.stats.currentHp = (dragon.stats.currentHp ?? dragon.stats.health) - dmg;
                     this.addFloatingText(hero.x, hero.y, `드래곤 -${dmg}HP!`, '#ff0000');
                     playSound('hit3', 'effect');
-
-                    // 영웅이 가져온 골드는 드래곤이 탈취 (보상)
                     dragon.gold += hero.gold;
                     this.addFloatingText(hero.x, hero.y - 20, `+${hero.gold}G`, '#8a2be2');
-
                     this.heroes.splice(i, 1);
-
-                    // 게임오버 체크
                     if (dragon.stats.currentHp <= 0) {
                         dragon.stats.currentHp = 0;
                         this._triggerGameOver();
                     }
-
                     if (this.main.UI) this.main.UI.update();
                     continue;
                 }
 
-                // 방 효과 적용
+                // 방 효과 적용 + 체류/수용 체크
                 const room = this.grid.getRoomAt(hero.currentCell.col, hero.currentCell.row);
                 if (room && !hero.visitedRooms.has(room.id)) {
+                    const type = ROOM_TYPES[room.type];
+
+                    // 수용 인원 체크
+                    const cap = type?.capacity || 99;
+                    if (this._countHeroesInRoom(room.id) >= cap) {
+                        hero.waiting = true;
+                        hero.waitingForRoom = room;
+                        this._drawHero(ctx, hero);
+                        continue;
+                    }
+
                     hero.visitedRooms.add(room.id);
                     this._applyRoomEffect(hero, room);
+
+                    // 체류 시간 설정 (전투방/감옥은 별도 관리)
+                    const dwell = type?.dwellTime || 0;
+                    if (dwell > 0 && type.effect !== 'td_battle' && type.effect !== 'capture') {
+                        hero.dwelling = true;
+                        hero.dwellTimer = dwell + (room.level - 1) * 300; // 레벨당 +0.3초
+                        hero.dwellingRoomId = room.id;
+                        this._drawHero(ctx, hero);
+                        continue;
+                    }
                 }
 
-                // 다음 이동 결정 (둥지 방향으로 A* 기반)
+                // 다음 이동 결정
                 const nextCell = this._getNextCell(hero);
                 if (!nextCell) {
                     this.heroes.splice(i, 1);
@@ -682,12 +756,44 @@ export class DungeonCanvas {
     }
 
     _drawHero(ctx, hero) {
-        // 몸체 (전투 중이면 적색 펄스)
         const inCombat = hero.inBattle && hero.inBattle.active;
-        ctx.fillStyle = inCombat ? `hsl(0, 80%, ${55 + Math.sin(Date.now() * 0.01) * 15}%)` : (hero.isBoss ? '#ff6b6b' : '#fff');
+        const isDwelling = hero.dwelling;
+        const isWaiting = hero.waiting;
+        const isImprisoned = hero.imprisoned;
+        const radius = hero.isBoss ? 18 : 14;
+
+        // 상태별 색상
+        let color = hero.isBoss ? '#ff6b6b' : '#fff';
+        if (inCombat) {
+            color = `hsl(0, 80%, ${55 + Math.sin(Date.now() * 0.01) * 15}%)`;
+        } else if (isImprisoned) {
+            color = '#7f8c8d';
+        } else if (isDwelling) {
+            color = `hsl(30, 70%, ${50 + Math.sin(Date.now() * 0.005) * 10}%)`; // 주황 펄스
+        } else if (isWaiting) {
+            color = '#888';
+        }
+
+        // 몸체
+        ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.arc(hero.x, hero.y, hero.isBoss ? 18 : 14, 0, Math.PI * 2);
+        ctx.arc(hero.x, hero.y, radius, 0, Math.PI * 2);
         ctx.fill();
+
+        // 상태 아이콘
+        if (isWaiting) {
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('⏳', hero.x, hero.y + 4);
+        } else if (isImprisoned) {
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🔒', hero.x, hero.y + 4);
+        } else if (isDwelling && !inCombat) {
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('💫', hero.x, hero.y + 4);
+        }
 
         // HP 바
         const barW = 36;
@@ -756,6 +862,7 @@ export class DungeonCanvas {
                 hero.imprisoned = true;
                 hero.imprisonTimer = 0;
                 hero.imprisonRoom = room;
+                hero.dwellingRoomId = room.id;
                 const cx = this.PADDING + (room.cells[0].col + 0.5) * this.CELL_SIZE;
                 const cy = this.PADDING + (room.cells[0].row + 0.5) * this.CELL_SIZE;
                 this.addFloatingText(cx, cy, '수감!', '#7f8c8d');
@@ -770,7 +877,8 @@ export class DungeonCanvas {
                 if (room.deployedPokemon && room.deployedPokemon.length > 0) {
                     const battle = new RoomBattle(hero, room, this);
                     this.activeBattles.push(battle);
-                    hero.inBattle = battle; // 전투 중 이동 정지용
+                    hero.inBattle = battle;
+                    hero.dwellingRoomId = room.id; // 전투 중 방에 체류
                 } else {
                     // 배치된 권속 없으면 그냥 통과
                     this.addFloatingText(hero.x, hero.y - 20, '무방비!', '#888');
@@ -951,7 +1059,12 @@ export class DungeonCanvas {
             vx: 0,
             vy: 0,
             visitedRooms: new Set(),
-            inBattle: null
+            inBattle: null,
+            dwelling: false,
+            dwellTimer: 0,
+            dwellingRoomId: null,
+            waiting: false,
+            waitingForRoom: null
         });
     }
 }
