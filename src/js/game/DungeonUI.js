@@ -613,11 +613,15 @@ export class DungeonUI {
     }
 
     _bindWaveToggle() {
-        const btn = document.getElementById('btn-wave-toggle');
+        // waveInfoBar 내부에서 직접 버튼 찾기
+        const btn = this.waveInfoBar.querySelector('#btn-wave-toggle');
         if (!btn) return;
         btn.addEventListener('click', () => {
             const wave = this.main.invasionWave;
-            if (!wave) return;
+            if (!wave) {
+                this.showToast('웨이브 시스템 로딩 중...', 'info');
+                return;
+            }
             if (wave.isActive) {
                 wave.stop();
                 btn.textContent = '▶ 시작';

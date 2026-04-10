@@ -308,16 +308,22 @@ input {
     top: 0;
     left: 0;
     right: 0;
-    height: 40px;
-    background: rgba(0, 0, 0, 0.7);
+    height: 44px;
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    font-size: 14px;
+    padding: 0 16px;
+    font-size: 13px;
     color: var(--white);
-    z-index: 50;
+    z-index: 200;
     box-sizing: border-box;
+    pointer-events: auto;
+}
+.wave-info-bar button {
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 201;
 }
 .wave-info-bar .wave-num {
     color: var(--orange);
